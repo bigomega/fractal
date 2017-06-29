@@ -47,6 +47,10 @@ class Tree {
     return this.head
   }
 
+  setHead(id) {
+    this.head = this.find(id)
+  }
+
   log() {
     ;(function traverse(node, depth) {
       console.log(Array(depth).join('- '), node.value, `(${node.id})`)
