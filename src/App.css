@@ -55,7 +55,10 @@
   max-height: 0;
 }
 .chat.opened {
-  background: #daf5ff;
+  background: #ecfaff;
+}
+.chat.siblings {
+  border-left: 4px solid #009eda;
 }
 .chat.opened .controls {
   max-height: 40px;

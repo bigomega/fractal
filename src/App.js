@@ -18,10 +18,18 @@ sampleTree.addNext('Im so happy', 7)
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = { viewArray: this.getViewArray([]), selectionArray: [] }
     this.addReplyText = this.addReplyText.bind(this)
     this.onInputKeydown = this.onInputKeydown.bind(this)
     this.reply = this.reply.bind(this)
+  }
+
+  getViewArray(selectionArray = this.state.selectionArray) {
+    let head = sampleTree.root
+    let depth = 0
+    const viewArray = []
+    do { viewArray.push(head) } while(head.children.length && (head = head.children[selectionArray[depth++]] || head.children[0]))
+    return viewArray
   }
 
   addReplyText(id) {
@@ -45,38 +53,38 @@ class App extends Component {
   }
 
   render() {
+    let siblingCount = 1
+
     return (
       <div className="app">
         <div className="chat-container">
         {
-          ((head, arr) => {
-            const createClosure = id => e => this.setState({ opened: id })
-            do {
-              const siblingCount = head.parent && head.parent.children.length;
-              arr.push(
-                <div
-                  className={cn('chat', { opened: this.state.opened === head.id })}
-                  key={head.id}
-                  onClick={createClosure(head.id)}
-                >
-                  <div className="text"><div className="id">{head.id}</div> {head.value}</div>
-                  { siblingCount > 1 && <div className="children-count">+{siblingCount - 1}</div> }
-                  <div className="controls">
-                    <div className="reply" title="Reply" onClick={(id => e => this.addReplyText(id))(head.id)}>➥ <span>Reply</span></div>
-                    <div className="star" title="Star">⭐ <span>Star</span></div>
-                    {/*<div className="comment" title="Comment">💬 <span>Comment</span></div>*/}
-                    { siblingCount > 1 &&
-                      [ <div className="previous" title="Previous" key="prev">◀ <span>Previous</span></div>
-                      , <div className="list" title="List" key="list">≡ <span>List alternatives</span></div>
-                      , <div className="next" title="Next" key="next"><span>Next</span> ▶</div>
-                      ]
-                    }
-                  </div>
-                </div>
-              )
-            } while(head.children.length && (head = head.children[0]))
-            return arr
-          })(sampleTree.root, [])
+          this.state.viewArray.map(node => (
+            siblingCount = node.parent && node.parent.children.length,
+            <div
+              className={cn('chat', {
+                opened: this.state.opened === node.id,
+                siblings: siblingCount > 1,
+              })}
+              key={node.id}
+              onClick={e => this.setState({ opened: node.id })}
+            >
+              <div className="text"><div className="id">{node.id}</div> {node.value}</div>
+              { siblingCount > 1 && <div className="children-count">+{siblingCount - 1}</div> }
+              <div className="controls">
+                <div className="reply" title="Reply" onClick={e => this.addReplyText(node.id)}>➥ <span>Reply</span></div>
+                <div className="star" title="Star">⭐ <span>Star</span></div>
+                { node.children.length > 1 && <div className="replies" title="Other Replies">≡ <span>Other repies</span></div> }
+                {/*<div className="comment" title="Comment">💬 <span>Comment</span></div>*/}
+                { siblingCount > 1 &&
+                  [ //<div className="previous" title="Previous" key="prev">◀ <span>Previous</span></div>
+                  , <div className="siblings" title="List Alternatives" key="list">≡ <span>List alternatives</span></div>
+                  // , <div className="next" title="Next" key="next"><span>Next</span> ▶</div>
+                  ]
+                }
+              </div>
+            </div>
+          ))
         }
         </div>
         <div className="input-container">
