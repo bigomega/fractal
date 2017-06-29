@@ -4,6 +4,7 @@ class TreeNode {
     this.value = text
     this.parent = parent
     this.children = children
+    this.depth = parent && parent.depth + 1 || 0
     return this
   }
 
@@ -53,7 +54,7 @@ class Tree {
 
   log() {
     ;(function traverse(node, depth) {
-      console.log(Array(depth).join('- '), node.value, `(${node.id})`)
+      console.log(node.depth, Array(depth).join('- '), node.value, `(${node.id})`)
       node.children.forEach(ch => traverse(ch, depth + 1))
     })(this.root, 1)
   }

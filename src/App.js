@@ -18,17 +18,18 @@ sampleTree.addNext('Im so happy', 7)
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { viewArray: this.getViewArray([]), selectionArray: [] }
+    this.state = { viewArray: this.getViewArray(), selectionArray: [], choices: 0, choiceDepth: 0 }
     this.addReplyText = this.addReplyText.bind(this)
     this.onInputKeydown = this.onInputKeydown.bind(this)
     this.reply = this.reply.bind(this)
+    this.choose = this.choose.bind(this)
   }
 
-  getViewArray(selectionArray = this.state.selectionArray) {
+  getViewArray() {
+    const selectionArray = this.state && this.state.selectionArray || []
     let head = sampleTree.root
-    let depth = 0
     const viewArray = []
-    do { viewArray.push(head) } while(head.children.length && (head = head.children[selectionArray[depth++]] || head.children[0]))
+    do { viewArray.push(head) } while(head.children.length && (head = head.children[selectionArray[head.depth]] || head.children[0]))
     return viewArray
   }
 
@@ -38,10 +39,41 @@ class App extends Component {
   }
 
   reply(e) {
-    const regexMatch = this.refs.input.value.match(/^(\/reply (\d+) )?(.*)/)
+      let regexMatch
+    if(this.state.choices) {
+      regexMatch = this.refs.input.value.match(/^\/choose (\d+)/)
+      if(!regexMatch || !+regexMatch[1]) {
+        alert('choose first!!!\nyou can click or type `/choose <choice number>`');
+        return;
+      }
+      this.choose(+regexMatch[1])
+      this.refs.input.value = ''
+      return
+    }
+    regexMatch = this.refs.input.value.match(/^(\/reply (\d+) )?(.*)/)
     sampleTree.addNext(regexMatch[3], +regexMatch[2])
     this.refs.input.value = ''
-    this.forceUpdate()
+    this.setState({ viewArray: this.getViewArray() })
+  }
+
+  choose(choiceNo) {
+    const selectionArray = this.state.selectionArray.slice()
+    selectionArray[this.state.choiceDepth] = choiceNo - 1
+    this.setState({ opened: null, selectionArray, choices: 0 }, () => this.setState({ viewArray: this.getViewArray() }))
+  }
+
+  showReplies(id) {
+    const selectionArray = this.state.selectionArray
+    let head = sampleTree.root
+    const viewArray = []
+    do {
+      viewArray.push(head)
+    } while(head.id !== id && head.children.length && (head = head.children[selectionArray[head.depth]] || head.children[0]))
+    this.setState({
+      viewArray: viewArray.concat(head.children),
+      choices: head.children.length,
+      choiceDepth: viewArray[viewArray.length - 1].depth,
+    })
   }
 
   onInputKeydown(e) {
@@ -53,32 +85,40 @@ class App extends Component {
   }
 
   render() {
-    let siblingCount = 1
+    let tmp = {}
 
     return (
       <div className="app">
         <div className="chat-container">
         {
-          this.state.viewArray.map(node => (
-            siblingCount = node.parent && node.parent.children.length,
+          this.state.viewArray.map((node, i) => (
+            tmp.choiceNo = this.state.viewArray.length - i <= this.state.choices ? this.state.choices + 1 - this.state.viewArray.length + i : '',
+            tmp.siblingCount = !tmp.choiceNo && node.parent && node.parent.children.length,
             <div
               className={cn('chat', {
-                opened: this.state.opened === node.id,
-                siblings: siblingCount > 1,
+                opened: !tmp.choiceNo && this.state.opened === node.id,
+                siblings: tmp.siblingCount > 1,
+                choice: tmp.choiceNo,
               })}
               key={node.id}
-              onClick={e => this.setState({ opened: node.id })}
+              onClick={(choiceNo => e => {
+                if(choiceNo) {
+                  this.choose(choiceNo)
+                } else {
+                  this.setState({ opened: node.id })
+                }
+              })(tmp.choiceNo)}
             >
-              <div className="text"><div className="id">{node.id}</div> {node.value}</div>
-              { siblingCount > 1 && <div className="children-count">+{siblingCount - 1}</div> }
+              <div className="text"><div className="id">{this.state.choices ? tmp.choiceNo : node.id}</div> {node.value}</div>
+              { tmp.siblingCount > 1 && <div className="children-count">+{tmp.siblingCount - 1}</div> }
               <div className="controls">
                 <div className="reply" title="Reply" onClick={e => this.addReplyText(node.id)}>➥ <span>Reply</span></div>
                 <div className="star" title="Star">⭐ <span>Star</span></div>
-                { node.children.length > 1 && <div className="replies" title="Other Replies">≡ <span>Other repies</span></div> }
+                { node.children.length > 1 && <div className="replies" title="Other Replies">≡ <span>See other repies</span></div> }
                 {/*<div className="comment" title="Comment">💬 <span>Comment</span></div>*/}
-                { siblingCount > 1 &&
+                { tmp.siblingCount > 1 &&
                   [ //<div className="previous" title="Previous" key="prev">◀ <span>Previous</span></div>
-                  , <div className="siblings" title="List Alternatives" key="list">≡ <span>List alternatives</span></div>
+                  , <div className="siblings" title="List Alternatives" key="list" onClick={e => this.showReplies(node.parent.id)}>≡ <span>See alternatives</span></div>
                   // , <div className="next" title="Next" key="next"><span>Next</span> ▶</div>
                   ]
                 }

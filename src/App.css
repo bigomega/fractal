@@ -54,6 +54,17 @@
   transition: max-height 0.3s linear;
   max-height: 0;
 }
+.chat.choice {
+  cursor: pointer;
+}
+.chat.choice:hover {
+  background: #ecfaff;
+}
+.chat.choice::before {
+  content: '▶';
+  color: #009eda;
+  margin-right: 10px;
+}
 .chat.opened {
   background: #ecfaff;
 }
