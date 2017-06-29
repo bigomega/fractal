@@ -1,24 +1,105 @@
-.App {
+.app {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.chat-container {
+  height: calc(100% - 60px);
+  overflow: auto;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.chat {
+  display: block;
+  position: relative;
+  padding: 1em;
+  padding-right: 65px;
+  border-bottom: 1px solid #ccc;
+}
+.chat .text {
+  display: inline-block;
+}
+.chat .id {
+  background: #e9e9e9;
+  color: #fff;
+  padding: 0px 4px;
+  border-radius: 1px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.chat .children-count {
+  background: #009eda;
+  color: #fff;
+  padding-top: 4px;
+  border-radius: 100px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 6px;
+  right: 35px;
+  width: 25px;
+  height: 25px;
   text-align: center;
 }
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+.chat .controls {
+  font-size: 0.85em;
+  display: flex;
+  overflow: hidden;
+  height: auto;
+  margin-bottom: -1rem;
+  margin-top: 1rem;
+  transition: max-height 0.3s linear;
+  max-height: 0;
+}
+.chat.opened .controls {
+  max-height: 40px;
+  /*border-top: 1px solid #eee;*/
+}
+.chat .controls > * {
+  cursor: pointer;
+  line-height: 1.5em;
+  padding: 5px 10px;
+  /*border-right: 1px solid #eee;*/
+}
+.chat .controls > *:last-child {
+  /*border-right: none;*/
+}
+.chat .controls > *:hover {
+  background: #eee;
+}
+@media screen and (max-width: 600px) {
+  .chat .controls > * span {
+    display: none;
+  }
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.input-container {
+  box-shadow: 0 0 30px -10px #000;
+  position: relative;
 }
 
-.App-intro {
-  font-size: large;
+textarea {
+  height: 60px;
+  width: calc(100% - 100px);
+  border: none;
+  resize: none;
+  box-sizing: border-box;
+  font-size: 1em;
+  padding: 0.5em 1em;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.send {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  width: 100px;
+  color: #fff;
+  background: green;
+  height: 60px;
+  padding-top: 19px;
+  box-sizing: border-box;
 }
